@@ -1,5 +1,8 @@
 FROM node:20-bullseye AS builder
 
+# Use bash explicitly so shell behavior is well-known/predictable
+SHELL ["/bin/bash", "-lc"]
+
 RUN apt-get update && \
     apt-get install -y git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
@@ -24,6 +27,9 @@ RUN git submodule update --init --recursive
 RUN pnpm build:all
 
 FROM node:20-bullseye AS runtime
+
+# Use bash explicitly for runtime layer too
+SHELL ["/bin/bash", "-lc"]
 
 RUN apt-get update && \
     apt-get install -y git ca-certificates && \
