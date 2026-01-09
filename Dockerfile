@@ -1,10 +1,13 @@
-FROM node:20-bullseye AS builder
+FROM ubuntu:22.04 AS builder
 
-# Use bash explicitly so shell behavior is well-known/predictable
 SHELL ["/bin/bash", "-lc"]
 
+
+
 RUN apt-get update && \
-    apt-get install -y git ca-certificates && \
+    apt-get install -y curl ca-certificates git build-essential pkg-config libssl-dev && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable
@@ -26,13 +29,14 @@ RUN pnpm install --frozen-lockfile=false
 RUN git submodule update --init --recursive
 RUN pnpm build:all
 
-FROM node:20-bullseye AS runtime
+FROM ubuntu:22.04 AS runtime
 
-# Use bash explicitly for runtime layer too
 SHELL ["/bin/bash", "-lc"]
 
 RUN apt-get update && \
-    apt-get install -y git ca-certificates && \
+    apt-get install -y curl ca-certificates git && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable
