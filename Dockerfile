@@ -1,4 +1,4 @@
-FROM node:22-bullseye AS builder
+FROM node:22-bookworm AS builder
 
 RUN apt-get update && \
     apt-get install -y git ca-certificates && \
@@ -23,7 +23,7 @@ RUN foundryup --install v1.2.3
 RUN git submodule update --init --recursive
 RUN pnpm build:all
 
-FROM node:22-bullseye AS runtime
+FROM node:22-bookworm AS runtime
 
 RUN apt-get update && \
     apt-get install -y git ca-certificates && \
