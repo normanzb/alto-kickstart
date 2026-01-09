@@ -1,16 +1,10 @@
-FROM ubuntu:22.04 AS builder
-
-SHELL ["/bin/bash", "-lc"]
-
-
+FROM node:20-bullseye AS builder
 
 RUN apt-get update && \
-    apt-get install -y curl ca-certificates git build-essential pkg-config libssl-dev && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10.12.1 --activate
 
 WORKDIR /usr/src/app
 
@@ -19,7 +13,6 @@ RUN git clone https://github.com/pimlicolabs/alto.git
 WORKDIR /usr/src/app/alto
 
 # Install dependencies and build
-RUN pnpm setup
 RUN pnpm install -g @ecp.eth/rivet
 RUN touch .foundry-version
 RUN echo "v1.2.3" > .foundry-version
@@ -29,17 +22,13 @@ RUN pnpm install --frozen-lockfile=false
 RUN git submodule update --init --recursive
 RUN pnpm build:all
 
-FROM ubuntu:22.04 AS runtime
-
-SHELL ["/bin/bash", "-lc"]
+FROM node:20-bullseye AS runtime
 
 RUN apt-get update && \
-    apt-get install -y curl ca-certificates git && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y git ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10.12.1 --activate
 
 WORKDIR /usr/src/app/alto
 COPY --from=builder /usr/src/app/alto .
