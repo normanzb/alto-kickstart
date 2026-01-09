@@ -1,4 +1,4 @@
-FROM node:20-bullseye AS builder
+FROM node:22-bullseye AS builder
 
 RUN apt-get update && \
     apt-get install -y git ca-certificates && \
@@ -17,12 +17,13 @@ RUN touch .foundry-version
 RUN echo "v1.2.3" > .foundry-version
 
 RUN pnpm install --frozen-lockfile=false
-RUN pnpm install @ecp.eth/rivet
-RUN rivet
+RUN curl -L https://foundry.paradigm.xyz | bash
+ENV PATH="/root/.foundry/bin:${PATH}"
+RUN foundryup --install v1.2.3
 RUN git submodule update --init --recursive
 RUN pnpm build:all
 
-FROM node:20-bullseye AS runtime
+FROM node:22-bullseye AS runtime
 
 RUN apt-get update && \
     apt-get install -y git ca-certificates && \
